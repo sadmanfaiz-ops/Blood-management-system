@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    .page { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+    .card { background:#fff; border-radius:12px; padding:18px; box-shadow:0 6px 24px rgba(0,0,0,0.08); }
+    .card h3 { margin:0 0 10px; color:#e74c3c; }
+    .metric { font-size:28px; font-weight:700; margin:6px 0; }
+    .badge { padding:4px 10px; border-radius:12px; color:white; background:#c0392b; font-size:12px; }
+    .table { width:100%; border-collapse:collapse; margin-top:10px; }
+    .table th, .table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 style="color:#e74c3c;">Dashboard</h1>
+    <div id="user-section" class="card">
+      <h3>My Overview</h3>
+      <div class="grid">
+        <div>
+          <div class="metric" id="m-donations">0</div>
+          <div>Total Donations</div>
+        </div>
+        <div>
+          <div class="metric" id="m-requests">0</div>
+          <div>Total Requests</div>
+        </div>
+        <div>
+          <div class="metric" id="m-active">0</div>
+          <div>Active Requests</div>
+        </div>
+        <div>
+          <div class="metric" id="m-availability">0</div>
+          <div>Donors Available Near You</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-section" class="card" style="display:none;">
+      <h3>Admin Overview</h3>
+      <div class="grid">
+        <div>
+          <div class="metric" id="a-donors">0</div>
+          <div>Total Donors</div>
+        </div>
+        <div>
+          <div class="metric" id="a-approved">0</div>
+          <div>Approved Donors</div>
+        </div>
+        <div>
+          <div class="metric" id="a-pending">0</div>
+          <div>Pending Donors</div>
+        </div>
+        <div>
+          <div class="metric" id="a-requests">0</div>
+          <div>Total Requests</div>
+        </div>
+        <div>
+          <div class="metric" id="a-fulfilled">0</div>
+          <div>Fulfilled Requests</div>
+        </div>
+      </div>
+      <h4 style="margin-top:16px;">Monthly Trends</h4>
+      <table class="table" id="trend-table">
+        <thead><tr><th>Month</th><th>Total Requests</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://127.0.0.1:1320/api';
+    const token = localStorage.getItem('token');
+    if (!token){
+      alert('Please login first');
+      window.location.href = 'login.html';
+    }
+
+    async function getUser(){
+      const res = await fetch(`${API}/auth/me`, { headers:{ Authorization:`Bearer ${token}` }});
+      if (!res.ok) { alert('Session expired. Please login again.'); window.location.href='login.html'; return null; }
+      return res.json();
+    }
+
+    async function loadUserDashboard(){
+      const res = await fetch(`${API}/dashboard/user`, { headers:{ Authorization:`Bearer ${token}` }});
+      if (!res.ok) return;
+      const data = await res.json();
+      document.getElementById('m-donations').textContent = data.donationCount || 0;
+      document.getElementById('m-requests').textContent = data.totalRequests || 0;
+      document.getElementById('m-active').textContent = data.activeRequests || 0;
+      document.getElementById('m-availability').textContent = data.bloodGroupAvailability || 0;
+    }
+
+    async function loadAdminDashboard(){
+      const res = await fetch(`${API}/dashboard/admin`, { headers:{ Authorization:`Bearer ${token}` }});
+      if (!res.ok) return;
+      const data = await res.json();
+      document.getElementById('admin-section').style.display = 'block';
+      document.getElementById('a-donors').textContent = data.donors || 0;
+      document.getElementById('a-approved').textContent = data.approvedDonors || 0;
+      document.getElementById('a-pending').textContent = data.pendingDonors || 0;
+      document.getElementById('a-requests').textContent = data.totalRequests || 0;
+      document.getElementById('a-fulfilled').textContent = data.fulfilledRequests || 0;
+      const tbody = document.querySelector('#trend-table tbody');
+      tbody.innerHTML='';
+      (data.monthlyTrend || []).forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row._id}</td><td>${row.total}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    (async () => {
+      const user = await getUser();
+      if (!user) return;
+      await loadUserDashboard();
+      if (user.role === 'admin') await loadAdminDashboard();
+    })();
+  </script>
+</body>
+</html>

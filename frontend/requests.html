@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Requests - Blood Donation System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', sans-serif; background: #f5f5f5; color: #333; }
+
+    .navbar {
+      background: #fff;
+      padding: 15px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-logo { font-size: 24px; font-weight: bold; color: #e74c3c; }
+
+    .navbar-links {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .navbar-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .navbar-links a:hover { color: #e74c3c; background: rgba(231,76,60,0.08); }
+
+    .btn-logout {
+      background: #e74c3c;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-logout:hover { background: #c0392b; }
+
+    .hero {
+      background: linear-gradient(120deg, #e74c3c, #c0392b);
+      color: white;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .hero h1 { font-size: 32px; margin-bottom: 10px; }
+    .hero p { opacity: 0.9; }
+
+    .container { max-width: 1200px; margin: -60px auto 0; padding: 0 20px 40px; }
+
+    .section {
+      background: white;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #333;
+    }
+
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    label { font-weight: 600; color: #444; }
+    input, select, textarea {
+      width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.1); }
+    textarea { resize: vertical; min-height: 90px; }
+
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    button { border: none; border-radius: 8px; padding: 12px 18px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #e74c3c; color: white; }
+    .btn-primary:hover { background: #c0392b; transform: translateY(-1px); }
+    .btn-secondary { background: #ecf0f1; color: #2c3e50; }
+    .btn-secondary:hover { background: #e1e6e9; }
+    .pill { padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block; }
+    .pill-pending { background: #ffeaa7; color: #d35400; }
+    .pill-approved { background: #d1f5e1; color: #0b8a4d; }
+    .pill-fulfilled { background: #d6eaff; color: #1f6feb; }
+    .pill-cancelled { background: #fbe3e4; color: #c0392b; }
+
+    .requests-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .request-card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 18px;
+      background: #fafafa;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .request-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .request-meta { color: #666; font-size: 13px; }
+    .request-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .info-row { display: flex; align-items: center; gap: 8px; color: #444; font-size: 14px; }
+    .emoji { font-size: 16px; }
+
+    .empty { text-align: center; padding: 30px; color: #888; }
+    .alert { margin-top: 10px; font-weight: 700; }
+    .alert-success { color: #0b8a4d; }
+    .alert-error { color: #c0392b; }
+
+    @media (max-width: 768px) {
+      .navbar { flex-direction: column; gap: 12px; }
+      .navbar-links { justify-content: center; }
+      .container { margin-top: -40px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-logo">🩸 Blood Donation</div>
+    <div class="navbar-links">
+      <a href="index.html">Home</a>
+      <a href="profile.html" class="auth-link">Profile</a>
+      <a href="requests.html" class="auth-link">Post Request</a>
+      <a href="donors.html" class="auth-link donors-link">Donors</a>
+      <a href="admin.html" class="auth-link">Admin</a>
+      <button class="btn-logout auth-link" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Post & Manage Blood Requests</h1>
+    <p>Share your need, track status, and notify donors quickly.</p>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <div class="section-title">📝 Create a Request</div>
+      <form id="createRequestForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bloodGroup">Blood Group *</label>
+            <select id="bloodGroup" required>
+              <option value="">Select Blood Group</option>
+              <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="quantity">Quantity (units) *</label>
+            <input type="number" id="quantity" min="1" max="50" value="2" required>
+          </div>
+          <div class="form-group">
+            <label for="urgency">Urgency *</label>
+            <select id="urgency" required>
+              <option value="">Select urgency</option>
+              <option>Low</option><option>Medium</option><option>High</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hospital">Hospital *</label>
+            <input type="text" id="hospital" placeholder="Hospital name" required>
+          </div>
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <input type="text" id="location" placeholder="City/area" required>
+          </div>
+          <div class="form-group">
+            <label for="neededBefore">Needed Before *</label>
+            <input type="date" id="neededBefore" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="description">Additional Details</label>
+          <textarea id="description" placeholder="Any extra info (ward, contact person, etc.)"></textarea>
+        </div>
+        <div class="button-group">
+          <button class="btn-primary" type="submit">📤 Post Request</button>
+          <button class="btn-secondary" type="reset">Clear</button>
+        </div>
+        <div id="alert" class="alert"></div>
+      </form>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📋 My Requests</div>
+      <div id="myRequests" class="requests-grid">
+        <div class="empty">Loading your requests...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:1320/api';
+
+    function getToken(){
+      const t = localStorage.getItem('token');
+      if(!t){ window.location.href = 'login.html'; }
+      return t;
+    }
+
+    function logout(){ localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; }
+
+    function initNavbar(){
+      const userStr = localStorage.getItem('user');
+      const requestLink = document.querySelector('a[href="requests.html"]');
+      const adminLink = document.querySelector('a[href="admin.html"]');
+      const donorsLink = document.querySelector('a[href="donors.html"]');
+      try{
+        const user = userStr ? JSON.parse(userStr) : null;
+        const isRecipient = !!(user && (user.role === 'recipient' || user.isRecipient));
+        if(requestLink){ requestLink.style.display = isRecipient ? '' : 'none'; }
+        if(adminLink){ adminLink.style.display = (user && user.role === 'admin') ? '' : 'none'; }
+        if(donorsLink){ donorsLink.style.display = isRecipient ? '' : 'none'; }
+      }catch(e){}
+    }
+    initNavbar();
+
+    function setMinDate(){
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('neededBefore').min = today;
+    }
+
+    async function loadRequests(){
+      const container = document.getElementById('myRequests');
+      container.innerHTML = '<div class="empty">Loading your requests...</div>';
+      try{
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/requests/my`, { headers:{ Authorization:`Bearer ${token}` } });
+        if(!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        if(!Array.isArray(data) || data.length === 0){
+          container.innerHTML = '<div class="empty">No requests yet. Post your first request above.</div>';
+          return;
+        }
+        container.innerHTML = data.map(r => renderCard(r)).join('');
+        bindActions();
+      }catch(err){
+        container.innerHTML = '<div class="empty">Could not load requests.</div>';
+        console.error(err);
+      }
+    }
+
+    function renderStatus(status){
+      const s = status.toLowerCase();
+      if(s==='approved') return '<span class="pill pill-approved">Approved</span>';
+      if(s==='fulfilled') return '<span class="pill pill-fulfilled">Fulfilled</span>';
+      if(s==='cancelled') return '<span class="pill pill-cancelled">Cancelled</span>';
+      return '<span class="pill pill-pending">Pending</span>';
+    }
+
+    function renderCard(r){
+      return `
+        <div class="request-card" data-id="${r._id}">
+          <div class="request-top">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="pill" style="background:#fdecea; color:#c0392b;">${r.bloodGroup}</span>
+              ${renderStatus(r.status)}
+            </div>
+            <div class="request-meta">${new Date(r.createdAt).toLocaleDateString()}</div>
+          </div>
+          <div class="info-row"><span class="emoji">🏥</span> <strong>${r.hospitalName}</strong></div>
+          <div class="info-row"><span class="emoji">📍</span> ${r.location}</div>
+          <div class="info-row"><span class="emoji">🩸</span> ${r.quantityRequired} units — ${r.urgencyLevel} urgency</div>
+          <div class="info-row"><span class="emoji">📅</span> Needed before: ${r.neededBefore ? new Date(r.neededBefore).toLocaleDateString() : 'N/A'}</div>
+          ${r.description ? `<div class="info-row"><span class="emoji">📝</span> ${r.description}</div>` : ''}
+          <div class="request-actions">
+            ${(r.status === 'Pending' || r.status === 'Approved') ? `<button class="btn-primary" data-action="fulfilled">Mark Fulfilled</button>` : ''}
+            ${(r.status === 'Pending') ? `<button class="btn-secondary" data-action="cancelled">Cancel</button>` : ''}
+          </div>
+        </div>`;
+    }
+
+    function bindActions(){
+      document.querySelectorAll('.request-card').forEach(card => {
+        card.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const status = btn.getAttribute('data-action') === 'fulfilled' ? 'Fulfilled' : 'Cancelled';
+            const id = card.getAttribute('data-id');
+            try{
+              const token = getToken();
+              const res = await fetch(`${API_BASE}/requests/${id}`, {
+                method:'PATCH',
+                headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+                body: JSON.stringify({ status })
+              });
+              if(!res.ok) throw new Error('Update failed');
+              loadRequests();
+            }catch(err){ console.error(err); }
+          });
+        });
+      });
+    }
+
+    function blockIfNotRecipient(){
+      const userStr = localStorage.getItem('user');
+      const alert = document.getElementById('alert');
+      const formSection = document.querySelector('.container > .section');
+      try{
+        const user = userStr ? JSON.parse(userStr) : null;
+        if(!user || !(user.role === 'recipient' || user.isRecipient)){
+          if(formSection){
+            formSection.style.display = 'none';
+          }
+          if(alert){
+            alert.className = 'alert alert-error';
+            alert.textContent = 'Only recipients can post blood requests. This section is not available for donors.';
+            alert.style.display = 'block';
+          }
+          return true;
+        }
+      }catch(e){}
+      return false;
+    }
+
+    if(blockIfNotRecipient()){
+      // Stop further init if user cannot post
+    }
+
+    document.getElementById('createRequestForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const alert = document.getElementById('alert');
+      alert.textContent = '';
+      
+            // Check if user can post requests
+            const userStr = localStorage.getItem('user');
+            if(userStr){
+              const user = JSON.parse(userStr);
+              if(!(user.role === 'recipient' || user.isRecipient)){
+                alert.className = 'alert alert-error';
+                alert.textContent = 'Only recipients can post blood requests. Please update your account type.';
+                return;
+              }
+            }
+      
+      const body = {
+        bloodGroup: document.getElementById('bloodGroup').value,
+        quantityRequired: Number(document.getElementById('quantity').value),
+        hospitalName: document.getElementById('hospital').value,
+        location: document.getElementById('location').value,
+        urgencyLevel: document.getElementById('urgency').value,
+        neededBefore: document.getElementById('neededBefore').value,
+        description: document.getElementById('description').value || undefined
+      };
+      try{
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/requests`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.message || 'Failed to create request');
+        alert.className = 'alert alert-success';
+        alert.textContent = 'Request posted successfully!';
+        e.target.reset();
+        setMinDate();
+        loadRequests();
+      }catch(err){
+        alert.className = 'alert alert-error';
+        alert.textContent = err.message;
+      }
+    });
+
+    setMinDate();
+    loadRequests();
+  </script>
+  <script src="js/app.js"></script>
+</body>
+</html>

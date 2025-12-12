@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Blood Donation Center — Save Lives</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="Blood Donation Center — Connect donors and recipients, save lives through community-driven blood donation.">
+</head>
+<body>
+  <div class="site">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-brand">
+          <a href="#" class="logo">🩸 BloodCare</a>
+        </div>
+        <div class="nav-menu">
+          <a href="#home">Home</a>
+          <a href="#about">About Us</a>
+          <a href="#process">Process</a>
+          <a href="#campaigns">Campaigns</a>
+          <a href="#gallery">Gallery</a>
+          <a href="#contact">Contact</a>
+          <a href="requests.html" class="btn-nav auth-link">Post Request</a>
+          <a href="profile.html" class="btn-nav auth-link">Profile</a>
+          <a href="donors.html" class="btn-nav auth-link donors-link">Donors</a>
+          <a href="#search" class="btn-nav auth-link donate-link">Donate</a>
+          <a href="login.html" class="btn-nav guest-link">Login</a>
+          <a href="signup.html" class="btn-nav guest-link">Sign Up</a>
+          <a href="#" id="logout-link" class="btn-nav auth-link">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Slider -->
+    <section id="home" class="hero-slider">
+      <div class="slider-container">
+        <div class="slide active">
+          <div class="slide-bg" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
+          <div class="container slide-content">
+            <div class="slide-text">
+              <h2>DONATE BLOOD, SAVE LIFE!</h2>
+              <h1>Your Donation Can Bring Smile At Others Face</h1>
+              <a href="#search" class="btn btn-primary">Donate Now</a>
+            </div>
+            <div class="slide-img">
+              <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=800&h=600&fit=crop" alt="Healthcare professional with patient">
+            </div>
+          </div>
+        </div>
+        <div class="slide">
+          <div class="slide-bg" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
+          <div class="container slide-content">
+            <div class="slide-text">
+              <h2>DONATE BLOOD, SAVE LIFE!</h2>
+              <h1>Donate Your Blood And Inspire Others</h1>
+              <a href="#search" class="btn btn-primary">Join With Us</a>
+            </div>
+            <div class="slide-img">
+              <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=800&h=600&fit=crop" alt="Blood donation center">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slider-controls">
+        <button class="dot active"></button>
+        <button class="dot"></button>
+      </div>
+    </section>
+
+    <main>
+      <!-- About Section -->
+      <section id="about" class="about-section">
+        <div class="container">
+          <div class="section-header">
+            <h2>We Are Helping People From 40 Years</h2>
+            <p>You can give blood at any of our blood donation venues all over the world.</p>
+          </div>
+          <div class="about-content">
+            <div class="about-text">
+              <p>We have total sixty thousands donor centers and visit thousands of other venues on various occasions. We are world largest and trustful blood donation center. We have been working since 1973 with a prestigious vision to helping patient to provide blood.</p>
+              <p>We are working all over the world, organizing blood donation campaign to grow awareness among the people to donate blood.</p>
+              <a href="#search" class="btn btn-secondary">Request Appointment</a>
+            </div>
+            <div class="about-stats">
+              <div class="stat-item">
+                <h3>40+</h3>
+                <p>Years Experience</p>
+              </div>
+              <div class="stat-item">
+                <h3>60K+</h3>
+                <p>Donor Centers</p>
+              </div>
+              <div class="stat-item">
+                <h3>1.2M+</h3>
+                <p>Lives Saved</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search Section -->
+      <section id="search" class="search-section">
+        <div class="container">
+          <h2>Find Donors</h2>
+          <p class="subtitle">Search by blood group and zone in Bangladesh</p>
+          <form id="search-form" class="search-form">
+            <div class="form-group">
+              <label for="blood_group">Blood Group</label>
+              <select id="blood_group" name="blood_group">
+                <option value="">Select Blood Type</option>
+                <option>O+</option>
+                <option>O-</option>
+                <option>A+</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B-</option>
+                <option>AB+</option>
+                <option>AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="zone">Zone / District</label>
+              <select id="zone" name="zone">
+                <option value="">All Zones</option>
+                <option>Dhaka</option>
+                <option>Chittagong</option>
+                <option>Khulna</option>
+                <option>Rajshahi</option>
+                <option>Barisal</option>
+                <option>Sylhet</option>
+                <option>Rangpur</option>
+                <option>Mymensingh</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+          <div id="results-grid" class="results-grid"></div>
+        </div>
+      </section>
+
+      <!-- Donation Process -->
+      <section id="process" class="process-section">
+        <div class="container">
+          <h2>Donation Process</h2>
+          <p class="subtitle">Simple steps to save lives</p>
+          <div class="process-steps">
+            <div class="step">
+              <div class="step-icon">1</div>
+              <h4>Registration</h4>
+              <p>Complete a simple registration form with your basic information.</p>
+            </div>
+            <div class="step">
+              <div class="step-icon">2</div>
+              <h4>Health Screening</h4>
+              <p>Undergo a quick health checkup and blood tests.</p>
+            </div>
+            <div class="step">
+              <div class="step-icon">3</div>
+              <h4>Donation</h4>
+              <p>Donate blood in a safe and comfortable environment (takes 10-15 mins).</p>
+            </div>
+            <div class="step">
+              <div class="step-icon">4</div>
+              <h4>Recovery</h4>
+              <p>Rest and refresh with snacks and beverages. You're a hero!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section class="testimonials-section">
+        <div class="container">
+          <h2>Donor & Recipient Stories</h2>
+          <div class="testimonials-grid">
+            <div class="testimonial">
+              <div class="person">
+                <img class="avatar" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=128&h=128&fit=crop" alt="Donor portrait">
+                <div>
+                  <p class="badge">Donor Opinion</p>
+                  <h4>Rafi Ahmed</h4>
+                  <span>Volunteer Donor — Dhaka, Bangladesh</span>
+                </div>
+              </div>
+              <p>"I have been donating since college. Knowing my blood can help someone recover gives me purpose. It’s a small act that creates a big impact."</p>
+            </div>
+            <div class="testimonial">
+              <div class="person">
+                <img class="avatar" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=128&h=128&fit=crop" alt="Recipient portrait">
+                <div>
+                  <p class="badge badge-secondary">Recipient Opinion</p>
+                  <h4>Nabila Khan</h4>
+                  <span>Recovered Patient — Chattogram, Bangladesh</span>
+                </div>
+              </div>
+              <p>"A stranger’s donation gave me a second chance. I’m deeply grateful to our donor community in Bangladesh for their kindness and quick response."</p>
+            </div>
+            <div class="testimonial">
+              <div class="person">
+                <img class="avatar" src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=128&h=128&fit=crop" alt="Donor portrait">
+                <div>
+                  <p class="badge">Donor Opinion</p>
+                  <h4>Saif Ullah</h4>
+                  <span>Community Organizer — Sylhet, Bangladesh</span>
+                </div>
+              </div>
+              <p>"I donate every few months and encourage friends to join. Together, we can ensure hospitals have enough supply when emergencies happen."</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Campaigns -->
+      <section id="campaigns" class="campaigns-section">
+        <div class="container">
+          <h2>Donation Campaigns</h2>
+          <p class="subtitle">Campaigns to encourage donors and reach those in need</p>
+          <div class="campaigns-grid">
+            <div class="campaign-card has-bg bg-dhaka">
+              <div class="campaign-date">14 June, 2025</div>
+              <div class="campaign-content">
+                <h4>World Blood Donors Day</h4>
+                <p>Every year, Bangladesh honors voluntary blood donors. Celebrate with us in Dhaka and help strengthen our national blood supply.</p>
+                <p class="campaign-time">🕐 10:00am - 3:00pm | 📍 Dhaka, Bangladesh</p>
+              </div>
+            </div>
+            <div class="campaign-card has-bg bg-chattogram">
+              <div class="campaign-date">20 Sep, 2025</div>
+              <div class="campaign-content">
+                <h4>O- Blood Donors Needed</h4>
+                <p>O- donors are urgently needed across coastal hospitals. Your universal blood can save lives in critical emergencies.</p>
+                <p class="campaign-time">🕐 10:00am - 3:00pm | 📍 Chattogram, Bangladesh</p>
+              </div>
+            </div>
+            <div class="campaign-card has-bg bg-sylhet">
+              <div class="campaign-date">11 Feb, 2025</div>
+              <div class="campaign-content">
+                <h4>You Are Somebody Type</h4>
+                <p>Many people share your blood group. Donate now to bring smiles to families and encourage others to give in Sylhet.</p>
+                <p class="campaign-time">🕐 10:00am - 3:00pm | 📍 Sylhet, Bangladesh</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gallery -->
+      <section id="gallery" class="gallery-section">
+        <div class="container">
+          <h2>Photo Gallery</h2>
+          <p class="subtitle">Campaign photos from different parts of the world</p>
+          <div class="gallery-grid">
+            <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=400&h=300&fit=crop" alt="Blood donation center staff">
+            <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=300&fit=crop" alt="Healthcare professional assisting donor">
+            <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400&h=300&fit=crop" alt="Blood sample testing lab">
+            <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400&h=300&fit=crop" alt="Hospital emergency care">
+            <img src="https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=400&h=300&fit=crop" alt="Blood donation drive event">
+            <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=300&fit=crop" alt="Medical team healthcare">
+          </div>
+        </div>
+      </section>
+
+      <!-- Newsletter -->
+      <section class="newsletter-section">
+        <div class="container">
+          <h3>Subscribe Us</h3>
+          <p>Signup for regular newsletter and stay up to date with our latest news.</p>
+          <form id="newsletter-form" class="newsletter-form">
+            <input type="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn btn-primary">Subscribe Now</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+      <div class="container footer-content">
+        <div class="footer-col">
+          <h4>Contact Us</h4>
+          <p>📧 support@donation.com<br>helpme@donation.com</p>
+          <p>📍 Road-2, 3/A East Shibganj<br>Sylhet-3100, Bangladesh</p>
+          <p>📞 Office: (+880) 0823 560 433<br>Cell: (+880) 0723 161 343</p>
+        </div>
+        <div class="footer-col">
+          <h4>Support Links</h4>
+          <ul>
+            <li><a href="#">Thalassemia</a></li>
+            <li><a href="#">Blood Count</a></li>
+            <li><a href="#">Hemolytimia</a></li>
+            <li><a href="#">Aplastic Anemia</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#search">Donate</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 BloodCare. All Rights Reserved. Made with ❤️ for life.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

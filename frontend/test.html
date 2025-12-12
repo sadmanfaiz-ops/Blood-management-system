@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>API Test Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { font-family: 'Roboto', sans-serif; background: #f5f5f5; }
+    .test-container { max-width: 1200px; margin: 60px auto; padding: 0 20px; }
+    .test-panel { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
+    .test-panel h2 { color: #e74c3c; margin-top: 0; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #e74c3c; box-shadow: 0 0 5px rgba(231, 76, 60, 0.3); }
+    button { background: #e74c3c; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    button:hover { background: #c0392b; }
+    .response { background: #f9f9f9; border-left: 4px solid #e74c3c; padding: 12px; margin-top: 12px; border-radius: 6px; max-height: 300px; overflow-y: auto; }
+    .response-code { font-weight: 600; color: #e74c3c; }
+    .response-data { font-family: 'Courier New', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+    .success { border-left-color: #27ae60; }
+    .success .response-code { color: #27ae60; }
+    .error { border-left-color: #e74c3c; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 16px; background: #ecf0f1; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { background: #e74c3c; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    label { display: block; margin-top: 10px; font-weight: 600; color: #333; }
+    .info { background: #e8f4f8; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1 style="color: #e74c3c;">🧪 API Test Panel</h1>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('auth')">Auth (Login/Signup)</button>
+      <button class="tab-btn" onclick="switchTab('profile')">Profile</button>
+      <button class="tab-btn" onclick="switchTab('donors')">Donors</button>
+      <button class="tab-btn" onclick="switchTab('requests')">Requests</button>
+      <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
+    </div>
+
+    <!-- AUTH PANEL -->
+    <div id="auth" class="tab-content active">
+      <div class="test-panel">
+        <h2>Authentication</h2>
+        <div class="info">💡 Tip: Save your token from signup/login and use it for other requests.</div>
+
+        <div style="margin-bottom: 20px;">
+          <h3>Signup</h3>
+          <div class="form-row">
+            <input type="text" id="signup-name" placeholder="Name" value="Test User">
+            <input type="email" id="signup-email" placeholder="Email" value="test@example.com">
+            <input type="password" id="signup-password" placeholder="Password" value="Test123456">
+            <select id="signup-blood"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option></select>
+            <input type="text" id="signup-phone" placeholder="Phone" value="9876543210">
+            <input type="text" id="signup-location" placeholder="Location" value="Dhaka">
+          </div>
+          <button onclick="testSignup()" style="margin-top: 12px; width: 100%;">Signup</button>
+          <div id="signup-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Login</h3>
+          <div class="form-row">
+            <input type="email" id="login-email" placeholder="Email" value="test@example.com">
+            <input type="password" id="login-password" placeholder="Password" value="Test123456">
+          </div>
+          <button onclick="testLogin()" style="margin-top: 12px; width: 100%;">Login</button>
+          <div id="login-response" class="response" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PANEL -->
+    <div id="profile" class="tab-content">
+      <div class="test-panel">
+        <h2>Profile Management</h2>
+        <div class="info">💡 You need a token to test these. Get one from Auth tab first.</div>
+
+        <div style="margin-bottom: 20px;">
+          <h3>Get Current User</h3>
+          <input type="text" id="token-me" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <button onclick="testGetMe()" style="width: 100%;">Get Profile</button>
+          <div id="me-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Update Profile</h3>
+          <input type="text" id="token-update" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <input type="text" id="update-name" placeholder="New Name">
+            <input type="text" id="update-phone" placeholder="New Phone">
+            <input type="text" id="update-location" placeholder="New Location">
+          </div>
+          <button onclick="testUpdateProfile()" style="margin-top: 12px; width: 100%;">Update Profile</button>
+          <div id="update-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Change Password</h3>
+          <input type="text" id="token-pwd" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <input type="password" id="current-password" placeholder="Current Password">
+            <input type="password" id="new-password" placeholder="New Password">
+          </div>
+          <button onclick="testChangePassword()" style="margin-top: 12px; width: 100%;">Change Password</button>
+          <div id="pwd-response" class="response" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONORS PANEL -->
+    <div id="donors" class="tab-content">
+      <div class="test-panel">
+        <h2>Donor Management</h2>
+
+        <div style="margin-bottom: 20px;">
+          <h3>Create Donor Profile</h3>
+          <input type="text" id="token-donor" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <input type="text" id="donor-name" placeholder="Name" value="John Donor">
+            <select id="donor-blood"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option></select>
+            <input type="text" id="donor-location" placeholder="Location" value="Dhaka">
+            <input type="text" id="donor-phone" placeholder="Phone" value="9876543210">
+          </div>
+          <button onclick="testCreateDonor()" style="margin-top: 12px; width: 100%;">Create Donor</button>
+          <div id="donor-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Search Donors</h3>
+          <div class="form-row">
+            <select id="search-blood"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option></select>
+            <input type="text" id="search-location" placeholder="Location" value="Dhaka">
+          </div>
+          <button onclick="testSearchDonors()" style="margin-top: 12px; width: 100%;">Search</button>
+          <div id="search-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Update Donor Availability</h3>
+          <input type="text" id="token-avail" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <input type="text" id="donor-id" placeholder="Donor ID" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <select id="avail-status"><option value="Available">Available</option><option value="Unavailable">Unavailable</option><option value="Donated Recently">Donated Recently</option></select>
+            <input type="date" id="last-donation">
+          </div>
+          <button onclick="testUpdateAvailability()" style="margin-top: 12px; width: 100%;">Update Availability</button>
+          <div id="avail-response" class="response" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REQUESTS PANEL -->
+    <div id="requests" class="tab-content">
+      <div class="test-panel">
+        <h2>Blood Request Management</h2>
+
+        <div style="margin-bottom: 20px;">
+          <h3>Create Blood Request</h3>
+          <input type="text" id="token-request" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <select id="req-blood"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option></select>
+            <input type="number" id="req-quantity" placeholder="Quantity (units)" value="2">
+            <input type="text" id="req-hospital" placeholder="Hospital Name" value="City Hospital">
+            <input type="text" id="req-location" placeholder="Location" value="Dhaka">
+            <select id="req-urgency"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select>
+            <input type="date" id="req-needed">
+          </div>
+          <button onclick="testCreateRequest()" style="margin-top: 12px; width: 100%;">Create Request</button>
+          <div id="request-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>View My Requests</h3>
+          <input type="text" id="token-myreq" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <button onclick="testMyRequests()" style="width: 100%;">View My Requests</button>
+          <div id="myreq-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Update Request Status</h3>
+          <input type="text" id="token-update-req" placeholder="Paste your token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <input type="text" id="update-req-id" placeholder="Request ID">
+            <select id="update-req-status"><option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Fulfilled">Fulfilled</option><option value="Cancelled">Cancelled</option></select>
+          </div>
+          <button onclick="testUpdateRequest()" style="margin-top: 12px; width: 100%;">Update</button>
+          <div id="update-req-response" class="response" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin" class="tab-content">
+      <div class="test-panel">
+        <h2>Admin Functions (Requires Admin Token)</h2>
+
+        <div style="margin-bottom: 20px;">
+          <h3>List All Donors</h3>
+          <input type="text" id="token-admin-donors" placeholder="Paste ADMIN token here" style="margin-bottom: 10px;">
+          <button onclick="testAdminDonors()" style="width: 100%;">List Donors</button>
+          <div id="admin-donors-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Approve/Reject Donor</h3>
+          <input type="text" id="token-admin-approve" placeholder="Paste ADMIN token here" style="margin-bottom: 10px;">
+          <div class="form-row">
+            <input type="text" id="donor-id-approve" placeholder="Donor ID">
+            <select id="donor-status-approve"><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
+          </div>
+          <button onclick="testApproveDonor()" style="margin-top: 12px; width: 100%;">Update Status</button>
+          <div id="approve-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>List All Requests</h3>
+          <input type="text" id="token-admin-requests" placeholder="Paste ADMIN token here" style="margin-bottom: 10px;">
+          <button onclick="testAdminRequests()" style="width: 100%;">List Requests</button>
+          <div id="admin-requests-response" class="response" style="display: none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <h3>Admin Dashboard</h3>
+          <input type="text" id="token-admin-dashboard" placeholder="Paste ADMIN token here" style="margin-bottom: 10px;">
+          <button onclick="testAdminDashboard()" style="width: 100%;">Get Dashboard</button>
+          <div id="admin-dashboard-response" class="response" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://127.0.0.1:1320/api';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showResponse(elementId, status, data) {
+      const el = document.getElementById(elementId);
+      el.style.display = 'block';
+      el.className = `response ${status < 400 ? 'success' : 'error'}`;
+      el.innerHTML = `<div class="response-code">Status: ${status}</div><div class="response-data">${JSON.stringify(data, null, 2)}</div>`;
+    }
+
+    async function testSignup() {
+      const data = {
+        name: document.getElementById('signup-name').value,
+        email: document.getElementById('signup-email').value,
+        password: document.getElementById('signup-password').value,
+        bloodGroup: document.getElementById('signup-blood').value,
+        phone: document.getElementById('signup-phone').value,
+        location: document.getElementById('signup-location').value,
+        isDonor: true
+      };
+      const res = await fetch(`${API}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('signup-response', res.status, result);
+      if (res.ok) {
+        document.getElementById('token-me').value = result.token;
+        document.getElementById('token-update').value = result.token;
+        document.getElementById('token-pwd').value = result.token;
+        document.getElementById('token-donor').value = result.token;
+        document.getElementById('token-request').value = result.token;
+      }
+    }
+
+    async function testLogin() {
+      const data = {
+        email: document.getElementById('login-email').value,
+        password: document.getElementById('login-password').value
+      };
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('login-response', res.status, result);
+      if (res.ok) {
+        document.getElementById('token-me').value = result.token;
+        document.getElementById('token-update').value = result.token;
+        document.getElementById('token-pwd').value = result.token;
+        document.getElementById('token-donor').value = result.token;
+        document.getElementById('token-request').value = result.token;
+      }
+    }
+
+    async function testGetMe() {
+      const token = document.getElementById('token-me').value;
+      const res = await fetch(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      showResponse('me-response', res.status, result);
+    }
+
+    async function testUpdateProfile() {
+      const token = document.getElementById('token-update').value;
+      const data = {};
+      if (document.getElementById('update-name').value) data.name = document.getElementById('update-name').value;
+      if (document.getElementById('update-phone').value) data.phone = document.getElementById('update-phone').value;
+      if (document.getElementById('update-location').value) data.location = document.getElementById('update-location').value;
+      const res = await fetch(`${API}/auth/me`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('update-response', res.status, result);
+    }
+
+    async function testChangePassword() {
+      const token = document.getElementById('token-pwd').value;
+      const data = {
+        currentPassword: document.getElementById('current-password').value,
+        newPassword: document.getElementById('new-password').value
+      };
+      const res = await fetch(`${API}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('pwd-response', res.status, result);
+    }
+
+    async function testCreateDonor() {
+      const token = document.getElementById('token-donor').value;
+      const data = {
+        name: document.getElementById('donor-name').value,
+        bloodGroup: document.getElementById('donor-blood').value,
+        location: document.getElementById('donor-location').value,
+        phone: document.getElementById('donor-phone').value
+      };
+      const res = await fetch(`${API}/donors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('donor-response', res.status, result);
+      if (res.ok) document.getElementById('donor-id').value = result._id;
+    }
+
+    async function testSearchDonors() {
+      const blood = document.getElementById('search-blood').value;
+      const location = document.getElementById('search-location').value;
+      const res = await fetch(`${API}/donors/search?bloodGroup=${blood}&location=${location}`);
+      const result = await res.json();
+      showResponse('search-response', res.status, result);
+    }
+
+    async function testUpdateAvailability() {
+      const token = document.getElementById('token-avail').value;
+      const donorId = document.getElementById('donor-id').value;
+      const data = {
+        availabilityStatus: document.getElementById('avail-status').value,
+        lastDonationDate: document.getElementById('last-donation').value
+      };
+      const res = await fetch(`${API}/donors/${donorId}/availability`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('avail-response', res.status, result);
+    }
+
+    async function testCreateRequest() {
+      const token = document.getElementById('token-request').value;
+      const data = {
+        bloodGroup: document.getElementById('req-blood').value,
+        quantityRequired: parseInt(document.getElementById('req-quantity').value),
+        hospitalName: document.getElementById('req-hospital').value,
+        location: document.getElementById('req-location').value,
+        urgencyLevel: document.getElementById('req-urgency').value,
+        neededBefore: document.getElementById('req-needed').value
+      };
+      const res = await fetch(`${API}/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('request-response', res.status, result);
+    }
+
+    async function testMyRequests() {
+      const token = document.getElementById('token-myreq').value;
+      const res = await fetch(`${API}/requests/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      showResponse('myreq-response', res.status, result);
+    }
+
+    async function testUpdateRequest() {
+      const token = document.getElementById('token-update-req').value;
+      const reqId = document.getElementById('update-req-id').value;
+      const data = { status: document.getElementById('update-req-status').value };
+      const res = await fetch(`${API}/requests/${reqId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('update-req-response', res.status, result);
+    }
+
+    async function testAdminDonors() {
+      const token = document.getElementById('token-admin-donors').value;
+      const res = await fetch(`${API}/donors`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      showResponse('admin-donors-response', res.status, result);
+    }
+
+    async function testApproveDonor() {
+      const token = document.getElementById('token-admin-approve').value;
+      const donorId = document.getElementById('donor-id-approve').value;
+      const data = { status: document.getElementById('donor-status-approve').value };
+      const res = await fetch(`${API}/donors/${donorId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      showResponse('approve-response', res.status, result);
+    }
+
+    async function testAdminRequests() {
+      const token = document.getElementById('token-admin-requests').value;
+      const res = await fetch(`${API}/requests`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      showResponse('admin-requests-response', res.status, result);
+    }
+
+    async function testAdminDashboard() {
+      const token = document.getElementById('token-admin-dashboard').value;
+      const res = await fetch(`${API}/dashboard/admin`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      showResponse('admin-dashboard-response', res.status, result);
+    }
+  </script>
+</body>
+</html>
