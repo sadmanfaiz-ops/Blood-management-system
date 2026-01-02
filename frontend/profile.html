@@ -257,7 +257,6 @@
     <div class="navbar-links">
       <a href="index.html">Home</a>
       <a href="profile.html">Profile</a>
-      <a href="profile.html">Profile</a>
       <a href="donors.html" class="donate-link">Donate</a>
       <a href="requests.html" class="request-link">Post Request</a>
       <a href="donors.html" class="donors-link">Donors</a>
@@ -280,6 +279,83 @@
       <div class="profile-info" id="profileInfo">
         <div class="loading">Loading your profile...</div>
       </div>
+    </div>
+
+    <!-- Donate Blood Form -->
+    <div class="profile-section">
+      <div class="section-title">🩸 Donate Blood</div>
+      <div class="info-box">
+        <p>Register as a blood donor and share your donation availability. Help save lives!</p>
+      </div>
+      
+      <form id="donateBloodForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bloodGroup">Blood Group</label>
+            <select id="bloodGroup" required>
+              <option value="">Select your blood group</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="donorLocation">Location (Area/City)</label>
+            <select id="donorLocation" required>
+              <option value="">Select your location</option>
+              <option value="Dhaka">Dhaka</option>
+              <option value="Gulshan">Gulshan</option>
+              <option value="Aftabnagar">Aftabnagar, Badda</option>
+              <option value="Banani">Banani</option>
+              <option value="Uttara">Uttara</option>
+              <option value="Dhanmondi">Dhanmondi</option>
+              <option value="Motijheel">Motijheel</option>
+              <option value="Mirpur">Mirpur</option>
+              <option value="Badda">Badda</option>
+              <option value="Narayanganj">Narayanganj</option>
+              <option value="Gazipur">Gazipur</option>
+              <option value="Tangail">Tangail</option>
+              <option value="Mymensingh">Mymensingh</option>
+              <option value="Chattogram">Chattogram</option>
+              <option value="Sylhet">Sylhet</option>
+              <option value="Khulna">Khulna</option>
+              <option value="Rajshahi">Rajshahi</option>
+              <option value="Rangpur">Rangpur</option>
+              <option value="Cox's Bazar">Cox's Bazar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lastDonation">Last Donation Date</label>
+            <input type="date" id="lastDonation">
+          </div>
+          <div class="form-group">
+            <label for="availabilityStatus">Availability Status</label>
+            <select id="availabilityStatus">
+              <option value="Available">Available</option>
+              <option value="Unavailable">Unavailable</option>
+              <option value="Donated Recently">Donated Recently</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="donorNotes">Additional Notes</label>
+          <textarea id="donorNotes" placeholder="Any medical conditions or preferences" style="resize: vertical; min-height: 80px;"></textarea>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn-primary">🩸 Register as Donor</button>
+          <button type="reset" class="btn-secondary">Clear Form</button>
+        </div>
+      </form>
     </div>
 
     <!-- Edit Profile Form -->
@@ -543,6 +619,54 @@
 
     // Load profile on page load
     loadProfile();
+
+    // Handle donate blood form
+    document.getElementById('donateBloodForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const bloodGroup = document.getElementById('bloodGroup').value;
+      const location = document.getElementById('donorLocation').value;
+      const lastDonation = document.getElementById('lastDonation').value;
+      const availabilityStatus = document.getElementById('availabilityStatus').value;
+
+      if (!bloodGroup || !location) {
+        showAlert('Please select your blood group and location', 'error');
+        return;
+      }
+
+      try {
+        const token = getToken();
+        const response = await fetch(`${API_BASE}/donors`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            bloodGroup: bloodGroup,
+            location: location,
+            phone: document.getElementById('phone').value || '',
+            name: document.getElementById('name').value || '',
+            lastDonationDate: lastDonation || null,
+            availabilityStatus: availabilityStatus || 'Available',
+            availability: true
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to register as donor');
+        }
+
+        const donor = await response.json();
+        showAlert('✅ Successfully registered as a blood donor! Please wait for admin approval.', 'success');
+        document.getElementById('donateBloodForm').reset();
+        loadProfile();
+      } catch (error) {
+        console.error('Error registering as donor:', error);
+        showAlert('Failed to register as donor: ' + error.message, 'error');
+      }
+    });
   </script>
   <script src="js/app.js"></script>
 </body>

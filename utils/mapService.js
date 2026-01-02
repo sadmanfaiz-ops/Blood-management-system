@@ -5,7 +5,10 @@ async function findNearbyDonors(bloodGroup, location) {
   const filter = { status: 'Approved', availability: true };
   if (bloodGroup) filter.bloodGroup = bloodGroup;
   if (location) filter.location = { $regex: location, $options: 'i' };
-  return Donor.find(filter).limit(10).select('name bloodGroup location phone availability availabilityStatus');
+  return Donor.find(filter)
+    .limit(10)
+    .populate('userId', 'email')
+    .select('name bloodGroup location phone email availability availabilityStatus userId');
 }
 
 module.exports = { findNearbyDonors };

@@ -14,6 +14,7 @@
     const authLinks = document.querySelectorAll('.auth-link');
     const logoutLink = document.getElementById('logout-link');
     const adminLink = document.querySelector('a[href="admin.html"]');
+    const analyticsLink = document.querySelector('a[href="analytics.html"]');
     const requestLink = document.querySelector('a[href="requests.html"]');
     const donorsLinks = document.querySelectorAll('a[href="donors.html"], .donors-link');
     const donateLinks = document.querySelectorAll('.donate-link');
@@ -26,6 +27,10 @@
 
     if (adminLink) {
       adminLink.style.display = (token && user && user.role === 'admin') ? 'inline-block' : 'none';
+    }
+
+    if (analyticsLink) {
+      analyticsLink.style.display = (token && user && user.role === 'admin') ? 'inline-block' : 'none';
     }
 
     if (requestLink) {

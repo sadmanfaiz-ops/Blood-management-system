@@ -2,6 +2,7 @@ const express = require('express');
 const Donor = require('../models/Donor');
 const { auth, requireRole } = require('../middleware/auth');
 const { getCoordinatesByRegion, isValidRegion } = require('../utils/regionCoordinates');
+const { logEvent } = require('../utils/analyticsService');
 const router = express.Router();
 
 // ========== SPECIFIC ROUTES (must come BEFORE /:id) ==========
@@ -184,6 +185,19 @@ router.get('/search', async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     const { name, bloodGroup, location, phone, coordinates } = req.body;
+    
+    // If location is provided but coordinates are not, try to get coordinates from region
+    let finalCoordinates = coordinates || { type: 'Point', coordinates: [0, 0] };
+    if (!coordinates && location) {
+      const regionCoords = getCoordinatesByRegion(location);
+      if (regionCoords) {
+        finalCoordinates = {
+          type: 'Point',
+          coordinates: [regionCoords.longitude, regionCoords.latitude]
+        };
+      }
+    }
+    
     let donor = await Donor.findOne({ userId: req.user._id });
     if (!donor) {
       donor = await Donor.create({
@@ -192,7 +206,7 @@ router.post('/', auth, async (req, res) => {
         bloodGroup: bloodGroup || req.user.bloodGroup,
         location: location || req.user.location,
         phone: phone || req.user.phone,
-        coordinates: coordinates || { type: 'Point', coordinates: [0, 0] },
+        coordinates: finalCoordinates,
         status: 'Pending'
       });
     } else {
@@ -200,6 +214,18 @@ router.post('/', auth, async (req, res) => {
       donor.bloodGroup = bloodGroup || donor.bloodGroup;
       donor.location = location || donor.location;
       donor.phone = phone || donor.phone;
+      
+      // Update coordinates if location changed
+      if (location) {
+        const regionCoords = getCoordinatesByRegion(location);
+        if (regionCoords) {
+          donor.coordinates = {
+            type: 'Point',
+            coordinates: [regionCoords.longitude, regionCoords.latitude]
+          };
+        }
+      }
+      
       if (coordinates) {
         donor.coordinates = coordinates;
       }
@@ -248,6 +274,36 @@ router.patch('/:id/status', auth, requireRole('admin'), async (req, res) => {
   if (!donor) return res.status(404).json({ message: 'Donor not found' });
   donor.status = status || donor.status;
   await donor.save();
+  
+  // Log analytics event
+  const eventType = status === 'Approved' ? 'DONOR_APPROVED' : status === 'Rejected' ? 'DONOR_REJECTED' : 'DONOR_STATUS_UPDATE';
+  await logEvent(eventType, {
+    donorId: donor._id,
+    metadata: {
+      status: donor.status,
+      bloodGroup: donor.bloodGroup,
+      location: donor.location
+    }
+  });
+  
+  try {
+    // Notify donor on approval/rejection via email only
+    const { sendEmailNotification } = require('../utils/notifications');
+    const subject = `Donor Registration ${donor.status}`;
+    const body = donor.status === 'Approved'
+      ? 'Your donor registration has been approved. Thank you for volunteering to save lives!'
+      : donor.status === 'Rejected'
+      ? 'Your donor registration was not approved at this time.'
+      : 'Your donor registration status has been updated.';
+
+    // Send Email via linked user
+    if (donor.userId) {
+      const user = await require('../models/User').findById(donor.userId).select('email');
+      if (user?.email) await sendEmailNotification(user.email, subject, body);
+    }
+  } catch (err) {
+    console.warn('Notification (donor status) failed:', err.message);
+  }
   res.json({ message: 'Donor status updated', donor });
 });
 

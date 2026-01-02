@@ -5,6 +5,7 @@ const Donor = require('../models/Donor');
 const { auth, requireRole } = require('../middleware/auth');
 const { sendNotificationsNearby } = require('../utils/notifications');
 const { findNearbyDonors } = require('../utils/mapService');
+const { logEvent } = require('../utils/analyticsService');
 const router = express.Router();
 
 // Create a new blood request
@@ -33,6 +34,17 @@ router.post('/', auth, async (req, res) => {
       location,
       urgencyLevel,
       neededBefore
+    });
+
+    // Log analytics event
+    await logEvent('REQUEST_CREATED', {
+      userId: req.user._id,
+      requestId: newRequest._id,
+      metadata: {
+        bloodGroup,
+        location,
+        urgencyLevel
+      }
     });
 
     // Notify compatible donors near location
@@ -67,6 +79,16 @@ router.patch('/:id', auth, async (req, res) => {
   }
   if (status) request.status = status;
   await request.save();
+  try {
+    // Notify recipient on status changes they make (e.g., Fulfilled/Cancelled confirmation)
+    const { sendEmailNotification } = require('../utils/notifications');
+    const userEmail = req.user.email;
+    const subject = `Your Request Status: ${request.status}`;
+    const body = `Your blood request (${request.bloodGroup}, ${request.location}) status is now "${request.status}".`;
+    if (userEmail) await sendEmailNotification(userEmail, subject, body);
+  } catch (err) {
+    console.warn('Notification (recipient status update) failed:', err.message);
+  }
   res.json({ message: 'Request updated', request });
 });
 
@@ -83,6 +105,20 @@ router.patch('/:id/status', auth, requireRole('admin'), async (req, res) => {
   if (!request) return res.status(404).json({ message: 'Request not found' });
   if (status) request.status = status;
   await request.save();
+  try {
+    // Notify recipient on admin acceptance/updates
+    const { sendEmailNotification } = require('../utils/notifications');
+    const recipient = await require('../models/User').findById(request.recipientId).select('email phone');
+    const subject = `Request ${request.status}`;
+    const body = request.status === 'Approved'
+      ? 'Your blood request has been approved and is now visible to donors.'
+      : request.status === 'Fulfilled'
+      ? 'Your blood request has been marked fulfilled. Wishing you well.'
+      : `Your blood request status is now ${request.status}.`;
+    if (recipient?.email) await sendEmailNotification(recipient.email, subject, body);
+  } catch (err) {
+    console.warn('Notification (admin status update) failed:', err.message);
+  }
   res.json({ message: 'Status updated', request });
 });
 

@@ -5,13 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Nearest Donors - Blood Management</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="js/leaflet/leaflet.css" />
+    <!-- Leaflet CSS from CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <style>
         .map-container {
             display: flex;
             height: 100vh;
             padding-top: 70px;
         }
+
+        .navbar {
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-logo:hover {
+            opacity: 0.9;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex: 1;
+            margin-left: 40px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 700;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .nav-user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .nav-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .nav-user-avatar {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .nav-user-name {
+            font-weight: 600;
+        }
+
+        .nav-user-role {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .logout-link {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 6px;
+            margin-left: 20px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2.5px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-user-section {
+                margin-left: auto;
+            }
+
+            .nav-user-info {
+                display: none;
+            }
+
+            .logout-link {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+        
         
         #map {
             flex: 1;
@@ -264,9 +432,39 @@
         .current-location.active {
             display: block;
         }
+
+        .btn-contact,
+        .btn-request {
+            flex: 1;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-contact {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-contact:hover {
+            background: #1976D2;
+            transform: translateY(-1px);
+        }
+
+        .btn-request {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-request:hover {
+            background: #F57C00;
+            transform: translateY(-1px);
+        }
     </style>
-    <!-- Leaflet Maps (local) -->
-    <link rel="stylesheet" href="js/leaflet/leaflet.css" />
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -274,13 +472,22 @@
         <div class="nav-container">
             <a href="index.html" class="nav-logo">🩸 Blood Hub</a>
             <div class="nav-menu" id="navMenu">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="donors.html" class="nav-link">Donors</a>
-                <a href="map.html" class="nav-link active">Map</a>
-                <a href="requests.html" class="nav-link">Requests</a>
-                <a href="profile.html" class="nav-link">Profile</a>
-                <a href="#contact" class="nav-link">Contact</a>
-                <a href="#" class="nav-link logout-link" id="logoutLink" style="display: none;">Logout</a>
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="donors.html" class="nav-link">👥 Donors</a>
+                <a href="map.html" class="nav-link active">🗺️ Map</a>
+                <a href="requests.html" class="nav-link">📋 Requests</a>
+                <a href="profile.html" class="nav-link">👤 Profile</a>
+            </div>
+            <div class="nav-user-section">
+                <div class="nav-user-info" id="userInfo" style="display: none;">
+                    <div class="nav-user-avatar" id="userAvatar">A</div>
+                    <div>
+                        <div class="nav-user-name" id="userName">User</div>
+                        <div class="nav-user-role" id="userRole">Recipient</div>
+                    </div>
+                </div>
+                <a href="#" class="logout-link" id="logoutLink" style="display: none;" onclick="logout(event)">🚪 Logout</a>
+                <a href="login.html" class="nav-link guest-link" style="margin: 0;">Login</a>
             </div>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -311,15 +518,25 @@
                         <select id="regionSelect">
                             <option value="">Manual Coordinates</option>
                             <option value="dhaka">Dhaka</option>
+                            <option value="merul-badda">Merul Badda (BRAC University)</option>
+                            <option value="aftabnagar">Aftabnagar, Badda</option>
+                            <option value="gulshan">Gulshan</option>
+                            <option value="banani">Banani</option>
+                            <option value="uttara">Uttara</option>
+                            <option value="dhanmondi">Dhanmondi</option>
+                            <option value="motijheel">Motijheel</option>
+                            <option value="mirpur">Mirpur</option>
+                            <option value="badda">Badda</option>
+                            <option value="narayanganj">Narayanganj</option>
+                            <option value="gazipur">Gazipur</option>
+                            <option value="tangail">Tangail</option>
+                            <option value="mymensingh">Mymensingh</option>
                             <option value="chattogram">Chattogram</option>
                             <option value="sylhet">Sylhet</option>
                             <option value="khulna">Khulna</option>
                             <option value="rajshahi">Rajshahi</option>
                             <option value="rangpur">Rangpur</option>
-                            <option value="mymensingh">Mymensingh</option>
                             <option value="cox's bazar">Cox's Bazar</option>
-                            <option value="narayanganj">Narayanganj</option>
-                            <option value="gazipur">Gazipur</option>
                         </select>
                     </div>
                 </div>
@@ -364,7 +581,7 @@
         </div>
     </div>
 
-    <script src="js/leaflet/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <!-- App Scripts -->
     <script src="js/app.js"></script>
     <script>
@@ -372,6 +589,14 @@
         let userMarker;
         let donorMarkers = [];
         let infoWindows = [];
+        let mapReady = false;
+        
+        // User's actual location - STAYS FIXED
+        let userLocation = {
+            lat: 23.77341,
+            lng: 90.42523,
+            name: 'Your Location'
+        };
 
         function showDebug(msg) {
             const el = document.getElementById('map-debug');
@@ -383,33 +608,158 @@
         
         // Initialize Map
         function initMap() {
-            const dhaka = { lat: 23.8103, lng: 90.4125 };
-            map = L.map('map').setView([dhaka.lat, dhaka.lng], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            updateUserMarker(dhaka);
             try {
-                setTimeout(() => { map.invalidateSize(); }, 200);
-                showDebug('Map initialized and sized');
-            } catch (e) { console.warn('Leaflet size invalidate error', e); showDebug('Map init error: ' + e.message); }
+                const mapContainer = document.getElementById('map');
+                if (!mapContainer) {
+                    console.error('❌ Map container not found');
+                    showDebug('❌ Map container not found');
+                    return;
+                }
+                
+                console.log('✅ Creating map at:', userLocation.lat, userLocation.lng);
+                map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                
+                console.log('✅ Map tile layer added');
+                
+                // Add user marker at user's location
+                updateUserMarker({ lat: userLocation.lat, lng: userLocation.lng });
+                
+                // Ensure map is properly sized
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                        mapReady = true;
+                        showDebug(`✅ Map ready. Your location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`);
+                        console.log('✅ Map initialized and ready');
+                    }
+                }, 300);
+            } catch (e) {
+                console.error('❌ Map initialization error:', e);
+                showDebug('❌ Map init error: ' + e.message);
+            }
         }
         
-        // Update user's location marker
-        function updateUserMarker(location) {
-            if (userMarker) {
-                userMarker.setLatLng([location.lat, location.lng]);
-            } else {
-                userMarker = L.circleMarker([location.lat, location.lng], {
-                    radius: 8,
-                    color: '#fff',
-                    weight: 2,
-                    fillColor: '#2196F3',
-                    fillOpacity: 0.8
-                }).addTo(map).bindTooltip('Your Location');
+        // Auto-request user location on page load
+        function autoRequestUserLocation() {
+            if (!navigator.geolocation) {
+                console.warn('Geolocation not supported by browser');
+                showDebug('⚠️ Geolocation not supported');
+                return;
             }
-            map.setView([location.lat, location.lng], 13);
+            
+            showDebug('📍 Requesting your location...');
+            console.log('Requesting geolocation...');
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    console.log(`✅ Location obtained: ${lat}, ${lng} (accuracy: ${accuracy}m)`);
+                    
+                    // Update global state with actual GPS location
+                    currentLocationState = {
+                        lat: lat,
+                        lng: lng,
+                        region: null,
+                        name: `Your Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`
+                    };
+                    
+                    // Update input fields with actual coordinates
+                    document.getElementById('userLat').value = lat.toFixed(4);
+                    document.getElementById('userLng').value = lng.toFixed(4);
+                    
+                    // Update current location display
+                    const currentLoc = document.getElementById('currentLocation');
+                    currentLoc.textContent = `📍 Your Location: ${lat.toFixed(4)}, ${lng.toFixed(4)} (±${Math.round(accuracy)}m)`;
+                    currentLoc.classList.add('active');
+                    
+                    // Update user marker on map
+                    updateUserMarker({ lat, lng });
+                    
+                    // Clear region selection since using GPS
+                    document.getElementById('regionSelect').value = '';
+                    document.getElementById('coordinatesInput').style.display = 'block';
+                    
+                    showDebug(`✅ Your location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                    console.log('Current location state:', currentLocationState);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error.message);
+                    let errorMsg = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location permission denied. Please enable location access in your browser settings.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out. Please try again.';
+                            break;
+                        default:
+                            errorMsg = error.message;
+                    }
+                    
+                    console.warn('Location error:', errorMsg);
+                    showDebug(`⚠️ Location error: ${errorMsg}`);
+                    
+                    // Don't show alert - just show in debug, user can manually select location
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Update user's location marker (BLUE marker - stays fixed at user location)
+        function updateUserMarker(location) {
+            if (!map) {
+                console.error('❌ Map not initialized yet');
+                return;
+            }
+            
+            try {
+                // Store user location
+                userLocation.lat = location.lat;
+                userLocation.lng = location.lng;
+                
+                if (userMarker) {
+                    userMarker.setLatLng([location.lat, location.lng]);
+                    console.log(`✅ User marker updated: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+                } else {
+                    userMarker = L.circleMarker([location.lat, location.lng], {
+                        radius: 12,
+                        color: '#1976D2',
+                        weight: 3,
+                        fillColor: '#2196F3',
+                        fillOpacity: 0.9,
+                        dashArray: '5, 5'
+                    }).addTo(map).bindPopup('📍 Your Location').bindTooltip('Your Location', { permanent: true });
+                    console.log(`✅ User marker created: ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`);
+                }
+                
+                // Center map on user location
+                map.setView([location.lat, location.lng], 14);
+                
+                // Force map to redraw
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100);
+            } catch (e) {
+                console.error('❌ Error updating user marker:', e);
+            }
         }
         
         // Clear existing donor markers
@@ -500,9 +850,11 @@
             const radius = parseFloat(document.getElementById('searchRadius').value) || 5;
             const bloodGroup = document.getElementById('bloodGroup').value;
             
+            console.log('Search params:', { region, lat, lng, radius, bloodGroup });
+            
             // Validate inputs
-            if (!region && (!lat || !lng)) {
-                alert('Please select a region or enter valid coordinates');
+            if (!region && (!lat || !lng || isNaN(lat) || isNaN(lng))) {
+                alert('Please select a region or enter valid coordinates to search');
                 return;
             }
             
@@ -511,31 +863,46 @@
             
             try {
                 let url = `/api/donors/nearest?radius=${radius}`;
+                let searchLocationName = '';
+                
                 if (region) {
                     url += `&region=${encodeURIComponent(region)}`;
+                    searchLocationName = region.charAt(0).toUpperCase() + region.slice(1);
+                    console.log(`Searching donors in region: ${region}`);
                 } else {
                     url += `&lat=${lat}&lng=${lng}`;
+                    searchLocationName = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                    console.log(`Searching donors at coordinates: ${lat}, ${lng}`);
                 }
                 if (bloodGroup) {
                     url += `&bloodGroup=${encodeURIComponent(bloodGroup)}`;
                 }
                 
+                showDebug(`🔍 Searching for donors in ${searchLocationName}...`);
+                console.log('Full API URL:', url);
+                
                 const response = await fetch(url);
                 const data = await response.json();
+                
+                console.log('API Response:', data);
                 
                 if (!data.success) {
                     donorsList.innerHTML = `<div class="no-donors-msg">❌ ${data.message}</div>`;
                     clearDonorMarkers();
+                    showDebug(`Search failed: ${data.message}`);
                     return;
                 }
                 
-                // Update user marker position
-                const userLat = data.userLocation.latitude;
-                const userLng = data.userLocation.longitude;
-                updateUserMarker({ lat: userLat, lng: userLng });
-                
-                // Add donor markers to map
+                // DO NOT move user marker - keep it at its current location
+                // Just add donor markers to the map
                 addDonorMarkers(data.donors);
+                
+                // Update current location display to show what region is being searched
+                const currentLoc = document.getElementById('currentLocation');
+                currentLoc.textContent = `🔍 Searching in: ${searchLocationName} | Radius: ${radius}km | Found: ${data.donors.length} donors`;
+                currentLoc.classList.add('active');
+                
+                showDebug(`✅ Found ${data.donors.length} donors in ${searchLocationName}`);
                 
                 // Display donors in sidebar
                 if (data.donors.length === 0) {
@@ -557,12 +924,17 @@
                                 ⏰ ${donor.availabilityStatus || 'Available'}
                             </div>
                             <span class="distance-badge">🎯 ${donor.distanceKm} km away</span>
+                            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button class="btn-contact" onclick="contactDonor('${donor.phone}', '${donor.name}')">📞 Contact</button>
+                                <button class="btn-request" onclick="requestBlood('${donor._id}', '${donor.name}')">📥 Request</button>
+                            </div>
                         </div>
                     `).join('');
                 }
             } catch (error) {
                 console.error('Search error:', error);
                 donorsList.innerHTML = '<div class="no-donors-msg">❌ Error searching donors</div>';
+                showDebug(`❌ Search error: ${error.message}`);
             }
         }
         
@@ -570,6 +942,74 @@
         function highlightMarker(index) {
             if (donorMarkers[index]) {
                 donorMarkers[index].openPopup();
+            }
+        }
+
+        // Contact donor
+        function contactDonor(phone, name) {
+            if (!phone || phone === 'undefined') {
+                alert('Donor phone number not available');
+                return;
+            }
+            alert(`📞 Contact ${name} at: ${phone}\n\nPlease reach out to them directly for blood donation requests.`);
+        }
+
+        // Request blood from donor
+        function requestBlood(donorId, donorName) {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (!token || user.role !== 'recipient') {
+                alert('Please log in as a recipient to request blood');
+                return;
+            }
+
+            // Redirect to requests page with donor info
+            window.location.href = `requests.html?donor=${donorId}&name=${encodeURIComponent(donorName)}`;
+        }
+
+        // Logout function
+        function logout(e) {
+            if (e) e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Update navbar with user info
+        function updateNavbarUserInfo() {
+            const token = localStorage.getItem('token');
+            const userStr = localStorage.getItem('user');
+            let user = null;
+            
+            try {
+                user = userStr ? JSON.parse(userStr) : null;
+            } catch (e) {
+                user = null;
+            }
+
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            const userRole = document.getElementById('userRole');
+            const userAvatar = document.getElementById('userAvatar');
+            const logoutLink = document.getElementById('logoutLink');
+            const guestLink = document.querySelector('.guest-link');
+
+            if (token && user) {
+                // User is logged in
+                userInfo.style.display = 'flex';
+                logoutLink.style.display = 'inline-block';
+                if (guestLink) guestLink.style.display = 'none';
+
+                // Set user info
+                userName.textContent = user.name || user.email || 'User';
+                userRole.textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User';
+                userAvatar.textContent = (user.name || user.email || 'U').charAt(0).toUpperCase();
+            } else {
+                // User is not logged in
+                userInfo.style.display = 'none';
+                logoutLink.style.display = 'none';
+                if (guestLink) guestLink.style.display = 'inline-block';
             }
         }
         
@@ -613,15 +1053,43 @@
         document.getElementById('userLat').addEventListener('keypress', (e) => e.key === 'Enter' && searchNearestDonors());
         document.getElementById('userLng').addEventListener('keypress', (e) => e.key === 'Enter' && searchNearestDonors());
         
-        // Handle region selection
+        // Handle region selection - just for searching, don't move marker
         document.getElementById('regionSelect').addEventListener('change', (e) => {
             const coordinatesInput = document.getElementById('coordinatesInput');
-            if (e.target.value) {
-                // Region selected, hide coordinates input
+            const region = e.target.value;
+            
+            if (region) {
+                // Region selected - show coordinates input is hidden
                 coordinatesInput.style.display = 'none';
+                console.log(`Region selected for search: ${region}`);
             } else {
                 // Manual entry, show coordinates input
                 coordinatesInput.style.display = 'block';
+            }
+        });
+        
+        // Update user location when coordinates are manually changed
+        document.getElementById('userLat').addEventListener('change', (e) => {
+            const lat = parseFloat(e.target.value);
+            const lng = parseFloat(document.getElementById('userLng').value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                console.log(`✅ Updating user location to: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                updateUserMarker({ lat, lng });
+                document.getElementById('currentLocation').textContent = `📍 Your Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                document.getElementById('currentLocation').classList.add('active');
+                showDebug(`✅ User location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }
+        });
+        
+        document.getElementById('userLng').addEventListener('change', (e) => {
+            const lat = parseFloat(document.getElementById('userLat').value);
+            const lng = parseFloat(e.target.value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                console.log(`✅ Updating user location to: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                updateUserMarker({ lat, lng });
+                document.getElementById('currentLocation').textContent = `📍 Your Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                document.getElementById('currentLocation').classList.add('active');
+                showDebug(`✅ User location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
             }
         });
         
@@ -635,14 +1103,37 @@
                         showDebug('ERROR: Leaflet failed to load!');
                         return;
                     }
-                    try { initMap(); } catch (e) { showDebug('Init error: ' + e.message); }
+                    try { 
+                        initMap(); 
+                        setTimeout(() => {
+                            updateNavbarUserInfo(); 
+                            initNavbarAuthState();
+                        }, 200);
+                    } catch (e) { 
+                        showDebug('Init error: ' + e.message); 
+                        console.error('Init error:', e);
+                    }
                 }, 500);
             } else {
-                try { initMap(); } catch (e) { showDebug('Init error: ' + e.message); }
+                try { 
+                    initMap(); 
+                    setTimeout(() => {
+                        updateNavbarUserInfo(); 
+                        initNavbarAuthState();
+                    }, 200);
+                } catch (e) { 
+                    showDebug('Init error: ' + e.message); 
+                    console.error('Init error:', e);
+                }
             }
-            try { initNavbarAuthState(); } catch (e) { console.warn('Navbar init error', e); }
             window.addEventListener('resize', () => {
-                try { if (map) { map.invalidateSize(); } } catch {}
+                try { 
+                    if (map) { 
+                        map.invalidateSize();
+                    } 
+                } catch (e) {
+                    console.warn('Resize error:', e);
+                }
             });
         });
     </script>

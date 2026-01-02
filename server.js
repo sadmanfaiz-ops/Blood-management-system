@@ -7,6 +7,7 @@ const donorRoutes = require('./routes/donorRoutes');
 const requestRoutes = require('./routes/requestRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 app.use(cors());
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/donors', donorRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Use your own last 4 digits here (replace 1234 with your student ID's last 4 digits)
 const PORT = process.env.PORT || 1320; // example if student ID ends with 1234

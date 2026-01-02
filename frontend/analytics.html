@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Blood Donation System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .stat-card.requests { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.donors { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.notifications { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-card.total { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+        .chart-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .chart-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .stats-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #333;
+        }
+        .stats-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        .events-list {
+            list-style: none;
+            padding: 0;
+        }
+        .event-item {
+            padding: 12px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .event-type {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 14px;
+        }
+        .event-user {
+            color: #666;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .event-time {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        .error-message {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .navbar {
+            background-color: #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+        }
+        .navbar a.active {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .navbar-brand {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">🩸 Blood Donation System</div>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="analytics.html" class="active">Analytics</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="analytics-container">
+        <h1>📊 Analytics Dashboard</h1>
+        
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="loading" class="loading" style="display: none;">Loading analytics data...</div>
+
+        <div id="content" style="display: none;">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <h3>Total Events</h3>
+                    <div class="value" id="totalEvents">0</div>
+                </div>
+                <div class="stat-card requests">
+                    <h3>Blood Requests</h3>
+                    <div class="value" id="requestCount">0</div>
+                </div>
+                <div class="stat-card donors">
+                    <h3>Donors Approved</h3>
+                    <div class="value" id="donorApprovedCount">0</div>
+                </div>
+                <div class="stat-card notifications">
+                    <h3>Notifications Sent</h3>
+                    <div class="value" id="notificationCount">0</div>
+                </div>
+            </div>
+
+            <!-- Event Type Chart -->
+            <div class="chart-section">
+                <h2>📊 Activity Breakdown (Chart)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="eventTypeChart"></canvas>
+                </div>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Event Type</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventTypeStats">
+                        <tr><td colspan="2" class="no-data">No data available</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Blood Group Chart -->
+            <div class="chart-section">
+                <h2>🩸 Blood Group Distribution (Chart)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="bloodGroupChart"></canvas>
+                </div>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Blood Group</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bloodGroupStats">
+                        <tr><td colspan="3" class="no-data">No data available</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Location Chart -->
+            <div class="chart-section">
+                <h2>📍 Location Distribution (Chart)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="locationChart"></canvas>
+                </div>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locationStats">
+                        <tr><td colspan="3" class="no-data">No data available</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Notification Stats -->
+            <div class="chart-section">
+                <h2>📬 Notification Delivery</h2>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationTypeStats">
+                        <tr><td colspan="2" class="no-data">No data available</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Events -->
+            <div class="chart-section">
+                <h2>🕐 Recent Activity (Last 10 Events)</h2>
+                <ul class="events-list" id="recentEvents">
+                    <li class="no-data">No recent events</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventTypeChartInstance, bloodGroupChartInstance, locationChartInstance;
+
+        // Check if user is logged in and is admin
+        async function checkAdminAccess() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (!token || user.role !== 'admin') {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').innerHTML = '❌ You must be logged in as an admin to access analytics.';
+                return false;
+            }
+            return true;
+        }
+
+        // Fetch analytics data
+        async function fetchAnalytics() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('error').style.display = 'none';
+
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/analytics/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayAnalytics(data);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').innerHTML = `❌ Error loading analytics: ${error.message}`;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Display analytics data with charts
+        function displayAnalytics(data) {
+            const { summary, recentEvents, notificationStats } = data;
+
+            // Total events
+            document.getElementById('totalEvents').textContent = summary.totalEvents || 0;
+
+            // Event counts
+            const eventMap = {};
+            (summary.eventCounts || []).forEach(e => {
+                eventMap[e._id] = e.count;
+            });
+            document.getElementById('requestCount').textContent = eventMap['REQUEST_CREATED'] || 0;
+            document.getElementById('donorApprovedCount').textContent = eventMap['DONOR_APPROVED'] || 0;
+            document.getElementById('notificationCount').textContent = (notificationStats?.totalNotifications || 0);
+
+            // Event Type Chart
+            createEventTypeChart(summary.eventCounts || []);
+
+            // Blood group chart
+            createBloodGroupChart(summary.bloodGroupStats || []);
+
+            // Location chart
+            createLocationChart(summary.locationStats || []);
+
+            // Blood group stats table
+            const total = summary.totalEvents || 1;
+            const bloodGroupHtml = (summary.bloodGroupStats || []).map(b => `
+                <tr>
+                    <td>${b._id}</td>
+                    <td>${b.count}</td>
+                    <td>${((b.count / total) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+            document.getElementById('bloodGroupStats').innerHTML = bloodGroupHtml || '<tr><td colspan="3" class="no-data">No data</td></tr>';
+
+            // Location stats table
+            const locationHtml = (summary.locationStats || []).map(l => `
+                <tr>
+                    <td>${l._id}</td>
+                    <td>${l.count}</td>
+                    <td>${((l.count / total) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+            document.getElementById('locationStats').innerHTML = locationHtml || '<tr><td colspan="3" class="no-data">No data</td></tr>';
+
+            // Event type stats table
+            const eventHtml = (summary.eventCounts || []).map(e => `
+                <tr>
+                    <td>${e._id}</td>
+                    <td>${e.count}</td>
+                </tr>
+            `).join('');
+            document.getElementById('eventTypeStats').innerHTML = eventHtml || '<tr><td colspan="2" class="no-data">No data</td></tr>';
+
+            // Notification type stats
+            const notifHtml = (notificationStats?.byType || []).map(n => `
+                <tr>
+                    <td>${n._id}</td>
+                    <td>${n.count}</td>
+                </tr>
+            `).join('');
+            document.getElementById('notificationTypeStats').innerHTML = notifHtml || '<tr><td colspan="2" class="no-data">No data</td></tr>';
+
+            // Recent events
+            const eventsHtml = (recentEvents || []).map(e => {
+                const userName = e.userId?.name || 'System';
+                const userEmail = e.userId?.email || '';
+                const time = new Date(e.timestamp).toLocaleString();
+                return `
+                    <li class="event-item">
+                        <div class="event-type">📌 ${e.eventType}</div>
+                        <div class="event-user">👤 ${userName} ${userEmail ? `(${userEmail})` : ''}</div>
+                        <div class="event-time">🕐 ${time}</div>
+                    </li>
+                `;
+            }).join('');
+            document.getElementById('recentEvents').innerHTML = eventsHtml || '<li class="no-data">No recent events</li>';
+        }
+
+        // Create Event Type Bar Chart
+        function createEventTypeChart(eventCounts) {
+            const labels = eventCounts.map(e => e._id) || [];
+            const values = eventCounts.map(e => e.count) || [];
+
+            const ctx = document.getElementById('eventTypeChart').getContext('2d');
+            if (eventTypeChartInstance) eventTypeChartInstance.destroy();
+            
+            eventTypeChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Event Count',
+                        data: values,
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#43e97b', '#fa709a'],
+                        borderColor: '#333',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Create Blood Group Pie Chart
+        function createBloodGroupChart(bloodGroups) {
+            const labels = bloodGroups.map(b => b._id) || [];
+            const values = bloodGroups.map(b => b.count) || [];
+
+            const ctx = document.getElementById('bloodGroupChart').getContext('2d');
+            if (bloodGroupChartInstance) bloodGroupChartInstance.destroy();
+            
+            bloodGroupChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Create Location Bar Chart
+        function createLocationChart(locations) {
+            const labels = locations.map(l => l._id) || [];
+            const values = locations.map(l => l.count) || [];
+
+            const ctx = document.getElementById('locationChart').getContext('2d');
+            if (locationChartInstance) locationChartInstance.destroy();
+            
+            locationChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Location Count',
+                        data: values,
+                        backgroundColor: '#4facfe',
+                        borderColor: '#333',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAdmin = await checkAdminAccess();
+            if (isAdmin) {
+                fetchAnalytics();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -271,6 +271,7 @@
       <a href="index.html">Home</a>
       <a href="profile.html" class="auth-link">Profile</a>
       <a href="requests.html" class="auth-link">Requests</a>
+      <a href="map.html" class="auth-link donors-link" style="background: #4CAF50; padding: 8px 16px; border-radius: 4px; color: white; text-decoration: none; font-weight: 600;">🗺️ View on Map</a>
       <a href="#donor-form-section" class="auth-link donate-link">Donate</a>
       <a href="#search-section" class="auth-link donors-link">Donors</a>
       <button class="btn-logout auth-link" onclick="logout()">Logout</button>
@@ -510,18 +511,10 @@
       try {
         // Capture geolocation
         donorData = await captureGeolocationAndSaveDonor(donorData);
-
         const token = getToken();
-        let response = await fetch(`${API_BASE}/donors/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const isExisting = response.ok;
-        const method = isExisting ? 'PATCH' : 'POST';
-        const endpoint = isExisting ? `${API_BASE}/donors/me` : `${API_BASE}/donors`;
-
-        response = await fetch(endpoint, {
-          method,
+        // Always POST to /api/donors — backend handles create-or-update
+        const response = await fetch(`${API_BASE}/donors`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -530,8 +523,16 @@
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Failed to save donor profile');
+          // Try JSON first, then fall back to text
+          let msg = 'Failed to save donor profile';
+          try {
+            const error = await response.json();
+            msg = error.message || msg;
+          } catch (_) {
+            const text = await response.text();
+            if (text) msg = msg + ': ' + text.substring(0, 120);
+          }
+          throw new Error(msg);
         }
 
         showAlert('✅ Donor profile saved successfully! Location captured for map display.', 'success');
